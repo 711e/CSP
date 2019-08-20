@@ -61,7 +61,7 @@ model_tea = Model(img_input, preds_tea)
 
 model.load_weights(weight_path, by_name=True)
 model_tea.load_weights(weight_path, by_name=True)
-print 'load weights from {}'.format(weight_path)
+print('load weights from {}'.format(weight_path))
 
 if C.offset:
     out_path = 'output/valmodels/caltech/%s/off2' % (C.scale)

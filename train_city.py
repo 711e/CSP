@@ -18,7 +18,7 @@ C.onegpu = 1
 C.size_train = (640, 1280)
 C.init_lr = 2e-4
 C.num_epochs = 150
-C.offset = True
+C.offset = False
 
 num_gpu = len(C.gpu_ids.split(','))
 batchsize = C.onegpu * num_gpu
@@ -33,17 +33,22 @@ random.shuffle(train_data)
 print('num of training samples: {}'.format(num_imgs_train))
 data_gen_train = data_generators.get_data(train_data, C, batchsize=batchsize)
 
-# define the base network (resnet here, can be MobileNet, etc)
-if C.network == 'resnet50':
-    from keras_csp import resnet50 as nn
-
-    weight_path = 'data/models/net_e54_l0.00451828871423.hdf5'
-
 input_shape_img = (C.size_train[0], C.size_train[1], 3)
 img_input = Input(shape=input_shape_img)
 # define the network prediction
-preds = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
-preds_tea = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
+# define the base network (resnet here, can be MobileNet, etc)
+if C.network == 'resnet50':
+    from keras_csp import resnet50 as nn
+    weight_path = 'data/models/net_e54_l0.00451828871423.hdf5'
+    preds = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
+    preds_tea = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
+elif C.network == 'mobilenet':
+    from keras_csp import mobilenet as nn
+    weight_path = '/home/zyh/abc/CSP/data/models/mobilenet_1_0_224_tf.h5'
+    preds = nn.nn_p3p4p5(img_input)
+    preds_tea = nn.nn_p3p4p5(img_input)
+else:
+    print 'not define backbone {}'.format(C.network)
 
 model = Model(img_input, preds)
 if num_gpu > 1:

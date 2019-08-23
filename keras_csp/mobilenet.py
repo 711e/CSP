@@ -7,6 +7,7 @@ import numpy as np
 import keras, math
 from .keras_layer_L2Normalization import L2Normalization
 
+
 def relu6(x):
     return K.relu(x, max_value=6)
 
@@ -16,6 +17,7 @@ def preprocess_input(x):
     x -= 0.5
     x *= 2.
     return x
+
 
 class DepthwiseConv2D(Conv2D):
     def __init__(self,
@@ -143,6 +145,7 @@ class DepthwiseConv2D(Conv2D):
         config['depthwise_constraint'] = constraints.serialize(self.depthwise_constraint)
         return config
 
+
 def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1), trainable=False):
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
     filters = int(filters * alpha)
@@ -155,8 +158,9 @@ def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1), trainable
     x = BatchNormalization(axis=channel_axis, name='conv1_bn')(x)
     return Activation(relu6, name='conv1_relu')(x)
 
+
 def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
-                          depth_multiplier=1, strides=(1, 1), block_id=1,dila=(1,1), trainable=False):
+                          depth_multiplier=1, strides=(1, 1), block_id=1, dila=(1, 1), trainable=False):
     channel_axis = 1 if K.image_data_format() == 'channels_first' else -1
     pointwise_conv_filters = int(pointwise_conv_filters * alpha)
 
@@ -180,18 +184,19 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
     x = BatchNormalization(axis=channel_axis, name='conv_pw_%d_bn' % block_id)(x)
     return Activation(relu6, name='conv_pw_%d_relu' % block_id)(x)
 
+
 # Original MobileNet from paper.
-def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     P3_up = Deconvolution2D(256, kernel_size=4, strides=2, padding='same',
@@ -216,17 +221,18 @@ def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
-def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+
+def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     x = _depthwise_conv_block(stage3, 512, alpha, depth_multiplier,
@@ -263,17 +269,18 @@ def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
-def nn_p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+
+def nn_p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     x = _depthwise_conv_block(stage3, 512, alpha, depth_multiplier,
@@ -316,17 +323,18 @@ def nn_p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
-def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+
+def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     x = _depthwise_conv_block(stage3, 512, alpha, depth_multiplier,
@@ -364,17 +372,18 @@ def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
-def nn_p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+
+def nn_p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     x = _depthwise_conv_block(stage3, 512, alpha, depth_multiplier,
@@ -420,17 +429,18 @@ def nn_p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
-def nn_p2p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
+
+def nn_p2p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
                               strides=(2, 2), block_id=2, trainable=trainable)
-    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3,trainable=trainable)
+    stage2 = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, trainable=trainable)
 
     x = _depthwise_conv_block(stage2, 256, alpha, depth_multiplier,
                               strides=(2, 2), block_id=4, trainable=trainable)
-    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5,trainable=trainable)
+    stage3 = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, trainable=trainable)
     # print('stage3:', stage3._keras_shape[1:])
 
     x = _depthwise_conv_block(stage3, 512, alpha, depth_multiplier,
@@ -477,12 +487,14 @@ def nn_p2p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1,  trainable=True):
 
     return [x_class, x_regr]
 
+
 # focal loss like
 def prior_probability_onecls(num_class=1, probability=0.01):
-	def f(shape, dtype=keras.backend.floatx()):
-		assert(shape[0] % num_class == 0)
-		# set bias to -log((1 - p)/p) for foregound
-		result = np.ones(shape, dtype=dtype) * -math.log((1 - probability) / probability)
-		# set bias to -log(p/(1 - p)) for background
-		return result
-	return f
+    def f(shape, dtype=keras.backend.floatx()):
+        assert (shape[0] % num_class == 0)
+        # set bias to -log((1 - p)/p) for foregound
+        result = np.ones(shape, dtype=dtype) * -math.log((1 - probability) / probability)
+        # set bias to -log(p/(1 - p)) for background
+        return result
+
+    return f

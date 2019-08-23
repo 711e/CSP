@@ -9,10 +9,11 @@ from keras import backend as K
 from .keras_layer_L2Normalization import L2Normalization
 import numpy as np
 import keras, math
-def identity_block(input_tensor, kernel_size, filters, stage, block, dila=(1,1), trainable=True):
 
+
+def identity_block(input_tensor, kernel_size, filters, stage, block, dila=(1, 1), trainable=True):
     nb_filter1, nb_filter2, nb_filter3 = filters
-    
+
     if K.image_dim_ordering() == 'tf':
         bn_axis = 3
     else:
@@ -25,7 +26,8 @@ def identity_block(input_tensor, kernel_size, filters, stage, block, dila=(1,1),
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = Activation('relu')(x)
 
-    x = Convolution2D(nb_filter2, (kernel_size, kernel_size), dilation_rate=dila, padding='same', name=conv_name_base + '2b', trainable=trainable)(x)
+    x = Convolution2D(nb_filter2, (kernel_size, kernel_size), dilation_rate=dila, padding='same',
+                      name=conv_name_base + '2b', trainable=trainable)(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
     x = Activation('relu')(x)
 
@@ -36,8 +38,8 @@ def identity_block(input_tensor, kernel_size, filters, stage, block, dila=(1,1),
     x = Activation('relu')(x)
     return x
 
-def conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2), dila=(1,1), trainable=True):
 
+def conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2), dila=(1, 1), trainable=True):
     nb_filter1, nb_filter2, nb_filter3 = filters
     if K.image_dim_ordering() == 'tf':
         bn_axis = 3
@@ -47,23 +49,27 @@ def conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2),
     conv_name_base = 'res' + str(stage) + block + '_branch'
     bn_name_base = 'bn' + str(stage) + block + '_branch'
 
-    x = Convolution2D(nb_filter1, (1, 1), strides=strides, name=conv_name_base + '2a', trainable=trainable)(input_tensor)
+    x = Convolution2D(nb_filter1, (1, 1), strides=strides, name=conv_name_base + '2a', trainable=trainable)(
+        input_tensor)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = Activation('relu')(x)
 
-    x = Convolution2D(nb_filter2, (kernel_size, kernel_size), dilation_rate=dila, padding='same', name=conv_name_base + '2b', trainable=trainable)(x)
+    x = Convolution2D(nb_filter2, (kernel_size, kernel_size), dilation_rate=dila, padding='same',
+                      name=conv_name_base + '2b', trainable=trainable)(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
     x = Activation('relu')(x)
 
     x = Convolution2D(nb_filter3, (1, 1), name=conv_name_base + '2c', trainable=trainable)(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
-    shortcut = Convolution2D(nb_filter3, (1, 1), strides=strides, name=conv_name_base + '1', trainable=trainable)(input_tensor)
+    shortcut = Convolution2D(nb_filter3, (1, 1), strides=strides, name=conv_name_base + '1', trainable=trainable)(
+        input_tensor)
     shortcut = BatchNormalization(axis=bn_axis, name=bn_name_base + '1')(shortcut)
 
     x = Add()([x, shortcut])
     x = Activation('relu')(x)
     return x
+
 
 def nn_p2p3(input_tensor=None, trainable=False):
     img_input = input_tensor
@@ -104,6 +110,7 @@ def nn_p2p3(input_tensor=None, trainable=False):
 
     return [x_class, x_regr]
 
+
 def nn_p3p4(input_tensor=None, trainable=False):
     img_input = input_tensor
     bn_axis = 3
@@ -136,7 +143,6 @@ def nn_p3p4(input_tensor=None, trainable=False):
                             kernel_initializer='glorot_normal', name='P4up', trainable=trainable)(stage4)
     # print('P4_up: ', P4_up._keras_shape[1:])
 
-
     P3_up = L2Normalization(gamma_init=10, name='P3norm')(P3_up)
     P4_up = L2Normalization(gamma_init=10, name='P4norm')(P4_up)
     conc = Concatenate(axis=-1)([P3_up, P4_up])
@@ -154,6 +160,7 @@ def nn_p3p4(input_tensor=None, trainable=False):
                            name='height_regr', trainable=trainable)(feat)
 
     return [x_class, x_regr]
+
 
 def nn_p4p5(input_tensor=None, trainable=False):
     img_input = input_tensor
@@ -210,6 +217,7 @@ def nn_p4p5(input_tensor=None, trainable=False):
 
     return [x_class, x_regr]
 
+
 def nn_p2p3p4(input_tensor=None, trainable=False):
     img_input = input_tensor
     bn_axis = 3
@@ -260,6 +268,7 @@ def nn_p2p3p4(input_tensor=None, trainable=False):
                            name='height_regr', trainable=trainable)(feat)
 
     return [x_class, x_regr]
+
 
 def nn_p3p4p5(img_input=None, offset=True, num_scale=1, trainable=False):
     bn_axis = 3
@@ -324,6 +333,7 @@ def nn_p3p4p5(img_input=None, offset=True, num_scale=1, trainable=False):
     else:
         return [x_class, x_regr]
 
+
 def nn_p2p3p4p5(input_tensor=None, trainable=False):
     img_input = input_tensor
     bn_axis = 3
@@ -383,6 +393,7 @@ def nn_p2p3p4p5(input_tensor=None, trainable=False):
 
     return [x_class, x_regr]
 
+
 def nn_down2(img_input=None, trainable=False):
     bn_axis = 3
     x = ZeroPadding2D((3, 3))(img_input)
@@ -427,8 +438,9 @@ def nn_down2(img_input=None, trainable=False):
     P5_up = L2Normalization(gamma_init=10, name='P5norm')(P5_up)
     conc = Concatenate(axis=-1)([P3_up, P4_up, P5_up])
 
-    feat = Deconvolution2D(256, kernel_size=3, strides=2, padding='same', kernel_initializer='glorot_normal', name='feat',
-                         trainable=trainable)(conc)
+    feat = Deconvolution2D(256, kernel_size=3, strides=2, padding='same', kernel_initializer='glorot_normal',
+                           name='feat',
+                           trainable=trainable)(conc)
     feat = BatchNormalization(axis=bn_axis, name='bn_feat')(feat)
     feat = Activation('relu')(feat)
 
@@ -440,6 +452,7 @@ def nn_down2(img_input=None, trainable=False):
                            name='height_regr', trainable=trainable)(feat)
 
     return [x_class, x_regr]
+
 
 def nn_down8(img_input=None, offset=True, trainable=False):
     bn_axis = 3
@@ -500,6 +513,7 @@ def nn_down8(img_input=None, offset=True, trainable=False):
     else:
         return [x_class, x_regr]
 
+
 def nn_down16(img_input=None, offset=True, trainable=False):
     bn_axis = 3
     x = ZeroPadding2D((3, 3))(img_input)
@@ -531,9 +545,9 @@ def nn_down16(img_input=None, offset=True, trainable=False):
 
     P3_up = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(stage3)
     # print('P3_up: ', P3_up._keras_shape[1:])
-    P4_up = Convolution2D(256, (1, 1), kernel_initializer='glorot_normal', name='P4',trainable=trainable)(stage4)
+    P4_up = Convolution2D(256, (1, 1), kernel_initializer='glorot_normal', name='P4', trainable=trainable)(stage4)
     # print('P4_up: ', P4_up._keras_shape[1:])
-    P5_up = Convolution2D(256, (1, 1), kernel_initializer='glorot_normal', name='P5',trainable=trainable)(stage5)
+    P5_up = Convolution2D(256, (1, 1), kernel_initializer='glorot_normal', name='P5', trainable=trainable)(stage5)
     # print('P5_up: ', P5_up._keras_shape[1:])
 
     P3_up = L2Normalization(gamma_init=10, name='P3norm')(P3_up)
@@ -562,10 +576,11 @@ def nn_down16(img_input=None, offset=True, trainable=False):
 
 # focal loss like
 def prior_probability_onecls(num_class=1, probability=0.01):
-	def f(shape, dtype=keras.backend.floatx()):
-		assert(shape[0] % num_class == 0)
-		# set bias to -log((1 - p)/p) for foregound
-		result = np.ones(shape, dtype=dtype) * -math.log((1 - probability) / probability)
-		# set bias to -log(p/(1 - p)) for background
-		return result
-	return f
+    def f(shape, dtype=keras.backend.floatx()):
+        assert (shape[0] % num_class == 0)
+        # set bias to -log((1 - p)/p) for foregound
+        result = np.ones(shape, dtype=dtype) * -math.log((1 - probability) / probability)
+        # set bias to -log(p/(1 - p)) for background
+        return result
+
+    return f

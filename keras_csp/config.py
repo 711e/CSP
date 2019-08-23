@@ -9,7 +9,7 @@ class Config(object):
         self.alpha = 0.999
 
         # setting for network architechture
-        self.network = 'resnet50'  # or 'mobilenet'
+        self.network = 'mobilenet'  # resnet50 or 'mobilenet'
         self.point = 'center'  # or 'top', 'bottom
         self.scale = 'h'  # or 'w', 'hw'
         self.num_scale = 1  # 1 for height (or width) prediction, 2 for height+width prediction

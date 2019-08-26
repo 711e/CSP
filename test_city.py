@@ -23,13 +23,18 @@ img_input = Input(shape=input_shape_img)
 # define the base network (resnet here, can be MobileNet, etc)
 if C.network == 'resnet50':
     from keras_csp import resnet50 as nn
+    weight_path = 'data/models/net_e54_l0.00451828871423.hdf5'
+    preds = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
+    preds_tea = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
 elif C.network == 'mobilenet':
     from keras_csp import mobilenet as nn
+    weight_path = '/home/zyh/abc/CSP/data/models/mobilenet_1_0_224_tf.h5'
+    preds = nn.nn_p3p4p5(img_input)
+    preds_tea = nn.nn_p3p4p5(img_input)
 else:
-    raise NotImplementedError('Not support network: {}'.format(C.network))
-
+    print 'not define backbone {}'.format(C.network)
 # define the network prediction
-preds = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
+# preds = nn.nn_p3p4p5(img_input, offset=C.offset, num_scale=C.num_scale, trainable=True)
 model = Model(img_input, preds)
 
 if C.offset:
@@ -38,6 +43,8 @@ if C.offset:
 else:
     w_path = 'output/valmodels/city/%s/nooff' % (C.scale)
     out_path = 'output/valresults/city/%s/nooff' % (C.scale)
+
+w_path = '/home/zyh/abc/CSP/data/models/'
 
 if not os.path.exists(out_path):
     os.makedirs(out_path)
@@ -48,6 +55,7 @@ for w_ind in range(51, 151):
         if f.split('_')[0] == 'net' and int(f.split('_')[1][1:]) == w_ind:
             cur_file = f
             break
+        cur_file = f
     weight1 = os.path.join(w_path, cur_file)
     print 'load weights from {}'.format(weight1)
     model.load_weights(weight1, by_name=True)

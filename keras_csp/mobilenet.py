@@ -186,7 +186,7 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
 
 
 # Original MobileNet from paper.
-def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
+def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True, offset=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
@@ -222,7 +222,7 @@ def nn_p2p3(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     return [x_class, x_regr]
 
 
-def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
+def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True, offset=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
@@ -267,7 +267,12 @@ def nn_p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x_regr = Convolution2D(1, (1, 1), activation='linear', kernel_initializer='glorot_normal',
                            name='height_regr', trainable=trainable)(feat)
 
-    return [x_class, x_regr]
+    if offset:
+        x_offset = Convolution2D(2, (1, 1), activation='linear', kernel_initializer='glorot_normal',
+                                 name='offset_regr', trainable=trainable)(feat)
+        return [x_class, x_regr, x_offset]
+    else:
+        return [x_class, x_regr]
 
 
 def nn_p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
@@ -324,7 +329,7 @@ def nn_p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     return [x_class, x_regr]
 
 
-def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
+def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True, offset=True):
     x = _conv_block(img_input, 32, alpha, strides=(2, 2), trainable=False)
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, trainable=False)
 
@@ -370,7 +375,12 @@ def nn_p2p3p4(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):
     x_regr = Convolution2D(1, (1, 1), activation='linear', kernel_initializer='glorot_normal',
                            name='height_regr', trainable=trainable)(feat)
 
-    return [x_class, x_regr]
+    if offset:
+        x_offset = Convolution2D(2, (1, 1), activation='linear', kernel_initializer='glorot_normal',
+                                 name='offset_regr', trainable=trainable)(feat)
+        return [x_class, x_regr, x_offset]
+    else:
+        return [x_class, x_regr]
 
 
 def nn_p3p4p5(img_input=None, alpha=1.0, depth_multiplier=1, trainable=True):

@@ -285,29 +285,29 @@ def nn_p3p4p5(img_input=None, offset=True, num_scale=1, trainable=False):
     x = identity_block(x, 3, [128, 128, 512], stage=3, block='b', trainable=trainable)
     x = identity_block(x, 3, [128, 128, 512], stage=3, block='c', trainable=trainable)
     stage3 = identity_block(x, 3, [128, 128, 512], stage=3, block='d', trainable=trainable)
-    # print('stage3: ', stage3._keras_shape[1:])
+    print('stage3: ', stage3._keras_shape[1:])
     x = conv_block(stage3, 3, [256, 256, 1024], stage=4, block='a', trainable=trainable)
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b', trainable=trainable)
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c', trainable=trainable)
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d', trainable=trainable)
     x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e', trainable=trainable)
     stage4 = identity_block(x, 3, [256, 256, 1024], stage=4, block='f', trainable=trainable)
-    # print('stage4: ', stage4._keras_shape[1:])
+    print('stage4: ', stage4._keras_shape[1:])
     x = conv_block(stage4, 3, [512, 512, 2048], stage=5, block='a', strides=(1, 1), dila=(2, 2),
                    trainable=trainable)
     x = identity_block(x, 3, [512, 512, 2048], stage=5, block='b', dila=(2, 2), trainable=trainable)
     stage5 = identity_block(x, 3, [512, 512, 2048], stage=5, block='c', dila=(2, 2), trainable=trainable)
-    # print('stage5: ', stage5._keras_shape[1:])
+    print('stage5: ', stage5._keras_shape[1:])
 
     P3_up = Deconvolution2D(256, kernel_size=4, strides=2, padding='same',
                             kernel_initializer='glorot_normal', name='P3up', trainable=trainable)(stage3)
-    # print('P3_up: ', P3_up._keras_shape[1:])
+    print('P3_up: ', P3_up._keras_shape[1:])
     P4_up = Deconvolution2D(256, kernel_size=4, strides=4, padding='same',
                             kernel_initializer='glorot_normal', name='P4up', trainable=trainable)(stage4)
-    # print('P4_up: ', P4_up._keras_shape[1:])
+    print('P4_up: ', P4_up._keras_shape[1:])
     P5_up = Deconvolution2D(256, kernel_size=4, strides=4, padding='same',
                             kernel_initializer='glorot_normal', name='P5up', trainable=trainable)(stage5)
-    # print('P5_up: ', P5_up._keras_shape[1:])
+    print('P5_up: ', P5_up._keras_shape[1:])
 
     P3_up = L2Normalization(gamma_init=10, name='P3norm')(P3_up)
     P4_up = L2Normalization(gamma_init=10, name='P4norm')(P4_up)

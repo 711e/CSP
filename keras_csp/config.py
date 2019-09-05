@@ -11,9 +11,9 @@ class Config(object):
         # setting for network architechture
         self.network = 'resnet50'  # resnet50 or 'mobilenet'
         self.point = 'center'  # or 'top', 'bottom
-        self.scale = 'h'  # or 'w', 'hw'
+        self.scale = 'hw'  # or 'w', 'hw'
         self.num_scale = 1  # 1 for height (or width) prediction, 2 for height+width prediction
-        self.offset = False  # append offset prediction or not
+        self.offset = True  # append offset prediction or not
         self.down = 4  # downsampling rate of the feature map for detection
         self.radius = 2  # surrounding areas of positives for the scale map
 
